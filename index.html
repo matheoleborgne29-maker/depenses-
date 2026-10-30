@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4B3FD8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dépenses">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Mes dépenses</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F0F8;--card:#fff;--ink:#1D1B3A;--mute:#6B6989;--line:#E1DFF0;--acc:#4B3FD8;--acc-t:#fff;--ok:#12805A;--bad:#C2410C;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14132A;--card:#1E1C3C;--ink:#EEEDFB;--mute:#A09EC4;--line:#322F5C;--acc:#8B83FF;--acc-t:#14132A;--ok:#43D19E;--bad:#FF9466;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14132A;--card:#1E1C3C;--ink:#EEEDFB;--mute:#A09EC4;--line:#322F5C;--acc:#8B83FF;--acc-t:#14132A;--ok:#43D19E;--bad:#FF9466;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.4}
+main{max-width:520px;margin:0 auto;padding:16px 16px 96px}
+h1{font-size:1.1rem;margin:4px 0 14px;font-weight:600;color:var(--mute)}
+.big{font-size:3rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.big small{font-size:1.4rem;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+.lbl{color:var(--mute);font-size:.9rem;margin-top:6px}
+form{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:1fr 1.2fr;gap:10px}
+input,select{width:100%;font:inherit;font-size:1rem;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{font:inherit;font-weight:600;border:0;border-radius:12px;padding:13px;background:var(--acc);color:var(--acc-t);cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,.tab:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:4px 0 12px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:6px}
+.cat{display:flex;justify-content:space-between;font-size:.95rem}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item b{font-weight:600}.item span{color:var(--mute);font-size:.85rem;display:block}
+.del{background:none;color:var(--mute);padding:6px 10px;font-size:1.2rem}
+.amt{font-weight:600;white-space:nowrap}
+.cols{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:10px}
+.cols div{flex:1;text-align:center;font-size:.75rem;color:var(--mute);display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.cols i{display:block;background:var(--ok);border-radius:6px 6px 0 0;min-height:3px;margin-bottom:4px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:8px;z-index:5}
+.tab{flex:1;background:none;color:var(--mute);border-radius:12px}
+.tab[aria-selected="true"]{background:var(--acc);color:var(--acc-t)}
+.empty{color:var(--mute);text-align:center;padding:14px 0}
+[hidden]{display:none}
+</style>
+</head>
+<body>
+<main>
+<section id="p-dep">
+  <h1>Ce mois-ci</h1>
+  <div class="card">
+    <div class="big" id="reste"></div>
+    <div class="lbl" id="reste-l"></div>
+    <form id="f-inc" style="margin-top:14px">
+      <div class="row">
+        <input id="i-amt" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="Argent reçu (€)" aria-label="Argent reçu en euros" required>
+        <input id="i-note" type="text" maxlength="40" placeholder="De qui ? ex. parents" aria-label="De qui">
+      </div>
+      <button type="submit">Ajouter de l’argent</button>
+    </form>
+    <div id="ilist" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <form id="f-dep">
+      <div class="row">
+        <input id="d-amt" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="Montant (€)" aria-label="Montant en euros" required>
+        <select id="d-cat" aria-label="Catégorie"><option>Nourriture</option><option>Vêtements</option><option>Sorties</option><option>Autre</option></select>
+      </div>
+      <input id="d-note" type="text" maxlength="40" placeholder="Note (facultatif)" aria-label="Note">
+      <button type="submit">Ajouter la dépense</button>
+    </form>
+  </div>
+  <div class="card" id="cats"></div>
+  </section>
+
+<section id="p-his" hidden>
+  <h1>Toutes mes dépenses</h1>
+  <div class="card" id="list"></div>
+  <div class="card" id="htot"></div>
+</section>
+
+<section id="p-epa" hidden>
+  <h1>Mon épargne</h1>
+  <div class="card">
+    <div class="big" id="tot"></div>
+    <div class="lbl">mis de côté en tout</div>
+    <div class="cols" id="chart" aria-label="Épargne des 6 derniers mois"></div>
+  </div>
+  <div class="card">
+    <form id="f-epa">
+      <input id="e-amt" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="Montant à mettre de côté (€)" aria-label="Montant à mettre de côté" required>
+      <button type="submit">Mettre de côté</button>
+    </form>
+    <div class="lbl" id="hint"></div>
+  </div>
+  <div class="card" id="elist"></div>
+  <div class="card">
+    <b>Sauvegarde</b>
+    <div class="lbl">Utile pour changer de téléphone ou d’adresse du site. Restaurer remplace tes données actuelles.</div>
+    <textarea id="bk" rows="3" aria-label="Texte de sauvegarde" style="width:100%;margin:10px 0;font:inherit;font-size:.8rem;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></textarea>
+    <div class="row"><button type="button" id="bk-out">Créer la sauvegarde</button><button type="button" id="bk-in">Restaurer</button></div>
+    <div class="lbl" id="bk-msg"></div>
+  </div>
+</section>
+</main>
+<nav role="tablist">
+  <button class="tab" role="tab" id="t-dep" aria-selected="true">Dépenses</button>
+  <button class="tab" role="tab" id="t-his" aria-selected="false">Historique</button>
+  <button class="tab" role="tab" id="t-epa" aria-selected="false">Épargne</button>
+</nav>
+<script>
+var INCOME_1=50, INCOME_15=30, KEY="mes-depenses-v1";
+var S={exp:[],sav:[],inc:[]};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.exp&&p.sav)S=p;}}catch(e){}
+if(!S.inc)S.inc=[];
+if(!S.start){var ds=[today()].concat(S.exp.map(function(e){return e.d}),S.sav.map(function(e){return e.d}),S.inc.map(function(e){return e.d})).sort();S.start=mk(ds[0]);save();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function $(id){return document.getElementById(id)}
+function eur(n){return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function mk(d){return d.slice(0,7)}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fdate(d){var a=d.split("-");return a[2]+"/"+a[1]}
+function sum(a){return a.reduce(function(t,x){return t+x.amt},0)}
+function incM(m,day){return INCOME_1+(day>=15?INCOME_15:0)+sum(S.inc.filter(function(e){return mk(e.d)===m}))}
+function bal(t){var m=mk(t),day=+t.slice(8),y=+S.start.slice(0,4),mo=+S.start.slice(5),tot=0,k;
+  for(;;){k=y+"-"+String(mo).padStart(2,"0");if(k>=m)break;tot+=INCOME_1+INCOME_15;mo++;if(mo>12){mo=1;y++}}
+  tot+=INCOME_1+(day>=15?INCOME_15:0);
+  return tot+sum(S.inc)-sum(S.exp)-sum(S.sav)}
+
+function renderDep(){
+  var t=today(), m=mk(t), day=+t.slice(8);
+  var inc=incM(m,day);
+  var mine=S.exp.filter(function(e){return mk(e.d)===m});
+  var spent=sum(mine), sv=sum(S.sav.filter(function(e){return mk(e.d)===m}));
+  var left=bal(t);
+  $("reste").innerHTML=eur(left).replace(" €","<small> €</small>");
+  $("reste").style.color=left<0?"var(--bad)":"var(--ink)";
+  $("reste-l").textContent="disponibles · "+eur(spent)+" dépensés ce mois-ci"+(sv?" · "+eur(sv)+" épargnés":"")+(day<15?" · +"+eur(INCOME_15)+" le 15":"");
+  var cats=["Nourriture","Vêtements","Sorties","Autre"],h="";
+  cats.forEach(function(c){
+    var v=sum(mine.filter(function(e){return e.cat===c}));
+    h+='<div class="cat"><span>'+c+'</span><b>'+eur(v)+'</b></div><div class="bar"><i style="width:'+(spent?Math.round(v/spent*100):0)+'%"></i></div>';
+  });
+  $("cats").innerHTML=h;
+  var I=S.inc.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.id-a.id});
+  $("ilist").innerHTML=I.map(function(e){
+    return '<div class="item"><div><b>'+esc(e.note||"Argent reçu")+'</b><span>'+fdate(e.d)+'</span></div><div><span class="amt" style="color:var(--ok)">+'+eur(e.amt)+'</span></div><button class="del" data-t="inc" data-id="'+e.id+'" aria-label="Supprimer">×</button></div>';
+  }).join("");
+  var L=S.exp.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.id-a.id});
+  $("list").innerHTML=L.length?L.map(function(e){
+    return '<div class="item"><div><b>'+esc(e.note||e.cat)+'</b><span>'+e.cat+' · '+fdate(e.d)+'</span></div><div><span class="amt">−'+eur(e.amt)+'</span></div><button class="del" data-t="exp" data-id="'+e.id+'" aria-label="Supprimer">×</button></div>';
+  }).join(""):'<div class="empty">Aucune dépense pour l’instant. Ajoute la première dans l’onglet Dépenses.</div>';
+  $("htot").innerHTML='<div class="cat"><span>Total dépensé ('+L.length+')</span><b style="font-size:1.4rem">'+eur(sum(S.exp))+'</b></div>';
+}
+
+function renderEpa(){
+  var tot=sum(S.sav);
+  $("tot").innerHTML=eur(tot).replace(" €","<small> €</small>");
+  var now=new Date(),ms=[],i;
+  for(i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({k:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),n:d.toLocaleDateString("fr-FR",{month:"short"})});}
+  var vals=ms.map(function(x){return sum(S.sav.filter(function(e){return mk(e.d)===x.k}))});
+  var mx=Math.max.apply(null,vals.concat([1]));
+  $("chart").innerHTML=ms.map(function(x,j){return '<div><i style="height:'+Math.round(vals[j]/mx*80)+'px"></i>'+x.n+'</div>'}).join("");
+  var t=today(),day=+t.slice(8),m=mk(t);
+  var inc=incM(m,day);
+  var left=bal(t);
+  $("hint").textContent=left>0?"Il te reste "+eur(left)+" : tu peux en mettre une partie de côté.":"Ce mois-ci, il ne te reste plus rien à mettre de côté.";
+  var L=S.sav.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.id-a.id});
+  $("elist").innerHTML=L.length?L.map(function(e){
+    return '<div class="item"><div><b>Mis de côté</b><span>'+fdate(e.d)+'</span></div><div><span class="amt" style="color:var(--ok)">+'+eur(e.amt)+'</span></div><button class="del" data-t="sav" data-id="'+e.id+'" aria-label="Supprimer">×</button></div>';
+  }).join(""):'<div class="empty">Rien d’épargné pour l’instant. Ajoute ton premier montant ci-dessus.</div>';
+}
+
+function render(){renderDep();renderEpa()}
+$("f-dep").addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var a=parseFloat($("d-amt").value);if(!(a>0))return;
+  S.exp.push({id:Date.now(),amt:a,cat:$("d-cat").value,note:$("d-note").value.trim(),d:today()});
+  save();$("d-amt").value="";$("d-note").value="";render();
+});
+$("f-epa").addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var a=parseFloat($("e-amt").value);if(!(a>0))return;
+  S.sav.push({id:Date.now(),amt:a,d:today()});
+  save();$("e-amt").value="";render();
+});
+$("f-inc").addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var a=parseFloat($("i-amt").value);if(!(a>0))return;
+  S.inc.push({id:Date.now(),amt:a,note:$("i-note").value.trim(),d:today()});
+  save();$("i-amt").value="";$("i-note").value="";render();
+});
+document.addEventListener("click",function(ev){
+  var b=ev.target.closest(".del");if(!b)return;
+  var id=+b.getAttribute("data-id"),t=b.getAttribute("data-t");
+  S[t]=S[t].filter(function(e){return e.id!==id});save();render();
+});
+function tab(w){
+  $("p-dep").hidden=w!=="dep";$("p-epa").hidden=w!=="epa";$("p-his").hidden=w!=="his";
+  $("t-dep").setAttribute("aria-selected",w==="dep");$("t-his").setAttribute("aria-selected",w==="his");$("t-epa").setAttribute("aria-selected",w==="epa");
+  window.scrollTo(0,0);
+}
+$("t-dep").onclick=function(){tab("dep")};
+$("t-his").onclick=function(){tab("his")};
+$("t-epa").onclick=function(){tab("epa")};
+$("bk-out").onclick=function(){var t=$("bk");t.value=JSON.stringify(S);t.focus();t.select();try{if(navigator.clipboard)navigator.clipboard.writeText(t.value)}catch(e){}$("bk-msg").textContent="Sauvegarde créée. Copie ce texte et garde-le (notes, message à toi-même).";};
+$("bk-in").onclick=function(){try{var p=JSON.parse($("bk").value);if(!p||!p.exp||!p.sav)throw 0;if(!p.inc)p.inc=[];if(!p.start)p.start=S.start;S=p;save();render();$("bk-msg").textContent="Sauvegarde restaurée.";}catch(e){$("bk-msg").textContent="Ce texte n’est pas une sauvegarde valide.";}};
+render();
+</script>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});</script>
+</body>
+</html>
