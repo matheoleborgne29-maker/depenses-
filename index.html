@@ -45,12 +45,17 @@ nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);b
 .tab{flex:1;background:none;color:var(--mute);border-radius:12px}
 .tab[aria-selected="true"]{background:var(--acc);color:var(--acc-t)}
 .empty{color:var(--mute);text-align:center;padding:14px 0}
-body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(60px);opacity:.4;pointer-events:none}
-body::before{width:300px;height:300px;background:var(--acc);top:-80px;left:-80px;animation:d1 14s ease-in-out infinite alternate}
-body::after{width:280px;height:280px;background:var(--ok);bottom:60px;right:-90px;animation:d2 17s ease-in-out infinite alternate}
-@keyframes d1{to{transform:translate(120px,260px) scale(1.2)}}
-@keyframes d2{to{transform:translate(-140px,-240px) scale(1.15)}}
-@media (prefers-reduced-motion:reduce){body::before,body::after{animation:none}}
+body::before,body::after,html::before,html::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);opacity:.55;pointer-events:none}
+body{background-image:radial-gradient(ellipse 130% 55% at 50% -8%,color-mix(in srgb,var(--acc) 38%,transparent),transparent);background-attachment:fixed}
+body::before{width:340px;height:340px;background:var(--acc);top:-90px;left:-100px;animation:d1 14s ease-in-out infinite alternate}
+body::after{width:320px;height:320px;background:var(--ok);bottom:40px;right:-110px;animation:d2 17s ease-in-out infinite alternate}
+html::before{width:260px;height:260px;background:#FF5FA2;top:38%;left:-120px;animation:d3 19s ease-in-out infinite alternate}
+html::after{width:240px;height:240px;background:#FFB547;top:12%;right:-100px;animation:d4 16s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(120px,260px) scale(1.25);filter:blur(70px) hue-rotate(70deg)}}
+@keyframes d2{to{transform:translate(-140px,-240px) scale(1.2);filter:blur(70px) hue-rotate(-60deg)}}
+@keyframes d3{to{transform:translate(200px,-120px) scale(1.3);filter:blur(70px) hue-rotate(50deg)}}
+@keyframes d4{to{transform:translate(-160px,220px) scale(1.2);filter:blur(70px) hue-rotate(-50deg)}}
+@media (prefers-reduced-motion:reduce){body::before,body::after,html::before,html::after{animation:none}}
 [hidden]{display:none}
 </style>
 </head>
